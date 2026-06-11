@@ -285,6 +285,9 @@ function startPassage(){
   document.getElementById("passageAns").disabled = true;
   document.getElementById("passageStatus").innerText = "Reading Time: 30 sec";
 
+  // show passage initially
+  document.querySelector("#passage p").style.display = "block";
+
   clearInterval(timer);
 
   timer = setInterval(()=>{
@@ -292,30 +295,31 @@ function startPassage(){
     if(phase === "read"){
       readTime--;
       document.getElementById("passageStatus").innerText =
-        "Reading Time: " + readTime + " sec";
+        "Reading Time: " + readTime;
 
       if(readTime <= 0){
         phase = "write";
+
+        // 🔥 HIDE PASSAGE AFTER READING TIME
+        document.querySelector("#passage p").style.display = "none";
+
         document.getElementById("passageAns").disabled = false;
-        document.getElementById("passageAns").focus();
       }
     }
 
-    else if(phase === "write"){
+    else {
       writeTime--;
       document.getElementById("passageStatus").innerText =
-        "Writing Time: " + writeTime + " sec";
+        "Writing Time: " + writeTime;
 
       if(writeTime <= 0){
         clearInterval(timer);
         document.getElementById("passageAns").disabled = true;
-        document.getElementById("passageStatus").innerText = "Time Over";
       }
     }
 
   },1000);
 }
-
 /* EMAIL */
 function startEmail(){
   show("email");
