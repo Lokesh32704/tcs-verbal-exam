@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TCS Verbal Ability - MCQ + Passage + Email</title>
+
+<style>
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #eef2f7, #d9e4f5);
+}
+
+/* TOP BAR */
+#topBar {
+  background: linear-gradient(90deg, #0b3d91, #1e5eff);
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  font-weight: 600;
+}
+
+/* TIMER BADGE */
+#timer {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+/* SECTIONS */
+.section {
+  display: none;
+  padding: 25px;
+}
+
+.active {
+  display: block;
+}
+
+/* CARD DESIGN */
+.card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  padding: 25px;
+  margin: 20px auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 850px;
+}
+
+/* HEADINGS */
+h2 {
+  color: #0b3d91;
+}
+
+h3 {
+  color: #333;
+}
+
+/* INPUTS */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus, textarea:focus {
+  border-color: #1e5eff;
+  box-shadow: 0 0 5px rgba(30,94,255,0.3);
+}
+
+textarea {
+  height: 180px;
+  resize: none;
+}
+
+/* BUTTON */
+button {
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #0b3d91, #1e5eff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* PASSAGE TEXT */
+p {
+  line-height: 1.6;
+  color: #444;
+}
+
+/* RESULT BOX */
+#result .card {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #0b3d91;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div id="topBar">
+  <div>📘 TCS Verbal Ability</div>
+  <div id="timer">Time: --</div>
+</div>
+
+<!-- START -->
+<div id="start" class="section active">
+  <div class="card">
+    <h2>Start Exam</h2>
+    <button onclick="startExam()">Begin</button>
+  </div>
+</div>
+
+<!-- MCQ -->
+<div id="mcq" class="section">
+  <div class="card">
+    <h2>Fill in the Blanks</h2>
+    <p id="qText"></p>
+    <input id="ans">
+    <button onclick="nextQ()">Next</button>
+  </div>
+</div>
+
+<!-- PASSAGE -->
+<div id="passage" class="section">
+  <div class="card">
+    <h2>Passage Writing</h2>
+
+    <h3>📖 Read (30 sec)</h3>
+    <p>
+        Artificial Intelligence in Healthcare
+Artificial Intelligence (AI) is transforming healthcare by improving diagnosis, treatment, and patient monitoring. AI-powered systems can analyze medical images such as X-rays and MRIs with remarkable accuracy, helping doctors detect diseases at earlier stages. Hospitals are increasingly using predictive analytics to identify patients at risk of complications before symptoms become severe. Additionally, virtual health assistants provide round-the-clock support to patients by answering queries and reminding them to take medications. While AI offers significant benefits, concerns regarding data privacy, algorithmic bias, and overreliance on technology continue to challenge healthcare providers. Experts believe that AI should complement, rather than replace, human medical professionals.
+    </p>
+
+    <h3 id="passageStatus">Reading Time: 30 sec</h3>
+
+    <textarea id="passageAns" disabled></textarea>
+
+    <button onclick="startEmail()">Next Section</button>
+  </div>
+</div>
+
+<!-- EMAIL -->
+<div id="email" class="section">
+  <div class="card">
+    <h2>✉️ Email Writing Task</h2>
+
+    <p><b>As an intern at ABC consulting Pvt.Ltd, write an email to your internship Project Manager, Mr.Ramesh, informing about the progress that you are making and some difficulties that you are encountering. Sign the email as Ben.
+Outline:  Thank – challenging – progress – tight schedule – support – report – analytics – guidance – access – doubt – requirements – design.</b></p>
+
+    <h3 id="emailTimer">Time: 9:00</h3>
+
+    <textarea id="emailAns" placeholder="Start writing email..."></textarea>
+
+    <button onclick="finishExam()">Submit Exam</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="section">
+  <div class="card">
+    <h2>Result</h2>
+    <p id="score"></p>
+  </div>
+</div>
+
+<script>
+
+let index = 0;
+let timer;
+let mcqTime = 30;
+let readTime = 30;
+let writeTime = 90;
+let emailTime = 540; // 9 min = 540 sec
+
+let phase = "read";
+let answers = [];
+
+const questions = [
+"The scientist's groundbreaking discovery was initially met with ________, as many experts doubted its validity.",
+"Despite repeated assurances from management, employee morale continued to ________ due to uncertainty about the merger.",
+"The diplomat's tactful intervention helped ________ tensions between the two neighboring countries.",
+"His argument was so ________ that even his strongest critics found it difficult to refute.",
+"The committee decided to ________ the proposal until additional data became available.",
+"The CEO emphasized that innovation must not come at the ________ of ethical responsibility.",
+"The author's latest novel received widespread acclaim for its ________ portrayal of social issues.",
+"The witness's testimony was deemed unreliable because it contained several ________ statements.",
+"Economic reforms were introduced to ________ investment and stimulate growth.",
+"The manager appreciated employees who could work ________ without constant supervision.",
+"The researcher remained ________ despite numerous setbacks and failed experiments.",
+"The new policy aims to ________ transparency in government operations.",
+"Her explanation was so ________ that even complex concepts became easy to understand.",
+"The company faced severe criticism for its failure to ________ customer complaints promptly.",
+"The discovery of the ancient manuscript provided valuable ________ into the civilization's culture.",
+"The judge advised the jury to remain ________ and consider only the evidence presented.",
+"His remarkable ability to remain calm during crises earned him a reputation for ________.",
+"The organization launched a campaign to ________ awareness about cybersecurity threats.",
+"The findings were considered ________ because they were supported by extensive empirical evidence.",
+"Although the task appeared straightforward, it proved far more ________ than anticipated."
+];
+
+const correct = [
+"skepticism","deteriorate","ease","compelling","postpone",
+"expense","insightful","contradictory","attract","independently",
+"persistent","enhance","lucid","address","insight",
+"impartial","composure","raise","credible","challenging"
+];
+
+/* NAV */
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* START */
+function startExam(){
+  show("mcq");
+  loadQ();
+}
+
+/* MCQ */
+function loadQ(){
+  document.getElementById("qText").innerText =
+    (index+1) + ". " + questions[index];
+
+  document.getElementById("ans").value = "";
+  mcqTime = 30;
+
+  document.getElementById("timer").innerText = "Time: 30";
+
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+    mcqTime--;
+    document.getElementById("timer").innerText = "Time: " + mcqTime;
+
+    if(mcqTime <= 0){
+      nextQ();
+    }
+  },1000);
+}
+
+function nextQ(){
+  answers[index] = document.getElementById("ans").value.toLowerCase().trim();
+
+  clearInterval(timer);
+  index++;
+
+  if(index < questions.length){
+    loadQ();
+  } else {
+    startPassage();
+  }
+}
+
+/* PASSAGE */
+function startPassage(){
+  show("passage");
+
+  phase = "read";
+  readTime = 30;
+  writeTime = 90;
+
+  document.getElementById("passageAns").disabled = true;
+  document.getElementById("passageStatus").innerText = "Reading Time: 30 sec";
+
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+
+    if(phase === "read"){
+      readTime--;
+      document.getElementById("passageStatus").innerText =
+        "Reading Time: " + readTime + " sec";
+
+      if(readTime <= 0){
+        phase = "write";
+        document.getElementById("passageAns").disabled = false;
+        document.getElementById("passageAns").focus();
+      }
+    }
+
+    else if(phase === "write"){
+      writeTime--;
+      document.getElementById("passageStatus").innerText =
+        "Writing Time: " + writeTime + " sec";
+
+      if(writeTime <= 0){
+        clearInterval(timer);
+        document.getElementById("passageAns").disabled = true;
+        document.getElementById("passageStatus").innerText = "Time Over";
+      }
+    }
+
+  },1000);
+}
+
+/* EMAIL */
+function startEmail(){
+  show("email");
+
+  emailTime = 540;
+
+  document.getElementById("emailTimer").innerText = "Time: 9:00";
+
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+
+    emailTime--;
+
+    let min = Math.floor(emailTime/60);
+    let sec = emailTime%60;
+
+    document.getElementById("emailTimer").innerText =
+      "Time: " + min + ":" + (sec<10?"0"+sec:sec);
+
+    if(emailTime <= 0){
+      clearInterval(timer);
+      document.getElementById("emailAns").disabled = true;
+    }
+
+  },1000);
+}
+
+/* RESULT */
+function finishExam(){
+  clearInterval(timer);
+
+  let score = 0;
+
+  for(let i=0;i<correct.length;i++){
+    if(answers[i] === correct[i]) score++;
+  }
+
+  show("result");
+  document.getElementById("score").innerText =
+    "MCQ Score: " + score + " / 20";
+}
+
+</script>
+
+</body>
+</html>
